@@ -30,9 +30,11 @@ python generate_data.py --dataset CSI500 --train_rate (2/3) --val_rate (1/6)
 ### Rank Task
 
 python train_rank.py --dataset NASDAQ 
+
 python train_rank.py --dataset NYSE
 
 ### Forecast Task
 
 python train_forecast.py --dataset_dir data/CSI300 --model_type GRU
+
 python train_forecast.py --dataset_dir data/CSI500 --model_type GRU
