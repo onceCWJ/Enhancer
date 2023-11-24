@@ -207,10 +207,6 @@ class Transformer(nn.Module):
         self.Intergrate = Intergate(args)
 
     def forward(self, transform_data, invariant_pattern=None, variant_pattern=None, intervene=None, abla=False):
-        if abla:
-            pred = self.transformer(transform_data)
-            return pred
-
         if intervene:
             pred_list = []
             feature_list = self.Intergrate(transform_data, variant_pattern, invariant_pattern, intervene)

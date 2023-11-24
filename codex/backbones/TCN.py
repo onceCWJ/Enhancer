@@ -83,11 +83,6 @@ class TCN(nn.Module):
 
     def forward(self, transform_data, invariant_pattern=None, variant_pattern=None, intervene=None, abla=False):
         b, n, t, d = transform_data.shape
-        if abla:
-            feature = transform_data.permute(0, 1, 3, 2).reshape(b, -1, t)
-            pred = torch.sigmoid(self.fc(self.TCN(feature))).permute(2, 0, 1)[:self.horizon, :, :].squeeze(dim=0)
-            return pred
-
         if intervene:
             pred_list = []
             feature_list = self.Intergrate(transform_data, variant_pattern, invariant_pattern, intervene)

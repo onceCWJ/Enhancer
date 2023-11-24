@@ -256,12 +256,6 @@ class GRU_model(nn.Module, Seq2SeqAttrs):
         :return: output: (self.horizon, batch_size, self.num_nodes * self.output_dim)
         """
         b, n, t, d = transform_data.shape
-        if abla:
-            encoder_hidden_state = self.encoder(transform_data.permute(2, 0, 1, 3).reshape(t, b, -1))
-            pred = self.decoder(encoder_hidden_state).squeeze(dim=0)
-            return pred
-
-        # print('shape:{}'.format(transform_data.shape))
         if intervene:
             pred_list = []
             feature_list = self.Intergrate(transform_data, variant_pattern, invariant_pattern, intervene)

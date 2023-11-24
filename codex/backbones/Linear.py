@@ -23,11 +23,6 @@ class mlp(nn.Module):
         t_data: [b,N,T,emb_dim]
         variant_pattern: [T,N,in_dim]
         '''
-        if abla:
-            pred = torch.sigmoid(self.fc(torch.sigmoid(self.fc1(transform_data))).squeeze(dim=-1))
-            pred = self.fc2(pred).permute(2, 0, 1).squeeze(dim=0)
-            return pred
-
         if intervene:
             pred_list = []
             feature_list = self.Intergrate(transform_data, variant_pattern, invariant_pattern, intervene)
