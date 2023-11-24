@@ -1,0 +1,71 @@
+from __future__ import absolute_import
+from __future__ import division
+from __future__ import print_function
+
+import argparse
+from supervisor import DMSupervisor
+
+parser = argparse.ArgumentParser()
+# basic settings
+parser.add_argument('--device',default='cuda:0',type=str)
+parser.add_argument('--log_dir',default='data/model',type=str,help='')
+parser.add_argument('--log_level',default='INFO',type=str)
+parser.add_argument('--log_every',default=1,type=int)
+parser.add_argument('--save_model',default=0,type=int)
+#data settings
+parser.add_argument('--batch_size',default=8,type=int)
+parser.add_argument('--dataset_dir',default='data/CSI300',type=str)
+# model settings
+parser.add_argument('--pretrain_epochs', type=int, default=5, help='Number of epochs to train.')
+parser.add_argument('--epochs', type=int, default=100, help='Meta Train epoch.')
+parser.add_argument('--lr', type=float, default=0.001, help='Initial learning rate.')
+parser.add_argument('--weight_decay', type=float, default=5e-4, help='Weight decay (L2 loss on parameters).')
+parser.add_argument('--lookback', type=int, default=16, help='Look back Window.')
+parser.add_argument('--input_dim', type=int, default=11, help='Dimension of price input')
+parser.add_argument('--emb_dim', type=int, default=30, help='Dimension of embdedding size')
+parser.add_argument('--max_len', type=int, default=500, help='Dimension of embdedding size')
+parser.add_argument('--d_model', type=int, default=512, help='Dimension of embdedding size')
+parser.add_argument('--dim_feedforward', type=int, default=256, help='Dimension of embdedding size')
+parser.add_argument('--n_heads', type=int, default=4, help='Transformer FeedForward size')
+parser.add_argument('--hid_dim', type=int, default=30, help='Dimension of hidden embdedding size')
+parser.add_argument('--order', type=int, default=4, help='Temporal polynomial order')
+parser.add_argument('--period', type=int, default=60, help='Temporal polynomial period')
+parser.add_argument('--feature_dim', type=int, default=10, help='hidden dim of base adjacency matrix')
+parser.add_argument('--num_layers', type=int, default=2, help='number layers of LSTM/Transformer')
+parser.add_argument('--T_N', type=int, default=20, help='number of the noise terms')
+parser.add_argument('--dropout', type=float, default=0.0, help='Dropout rate (1 - keep probability).')
+parser.add_argument('--noise_factor', type=float, default=1000, help='Normalizing factor of noise')
+parser.add_argument('--mean_factor', type=float, default=100, help='Amplification of the mean loss function')
+parser.add_argument('--var_factor', type=float, default=1e5, help='Amplification of the variance loss function')
+parser.add_argument('--inner_lr', type=float, default=0.0003, help='learning rate of the feature network')
+parser.add_argument('--outer_tem_lr', type=float, default=0.0003, help='learning rate of the temporal meta-learner')
+parser.add_argument('--outer_rel_lr', type=float, default=0.0003, help='learning rate of the relational meta-learner')
+parser.add_argument('--base_lr', type=float, default=0.0003, help='base learning rate')
+parser.add_argument('--model_type', type=str, default='Transformer', help='feature network type')
+parser.add_argument('--save_rank_model_checkpoint_path', type=str, default='save_models/', help='save model path')
+parser.add_argument('--lr_decay_ratio',default=0.7,type=float)
+parser.add_argument('--only_test', action='store_true')
+parser.add_argument('--cl_decay_steps', default=2000, type=int)
+parser.add_argument('--filter_type', default='dual_random_walk', type=str)
+parser.add_argument('--horizon', default=1, type=int)
+parser.add_argument('--max_diffusion_step', default=2, type=int)
+parser.add_argument('--num_rnn_layers', default=1, type=int)
+parser.add_argument('--output_dim', default=1, type=int)
+parser.add_argument('--rnn_units', default=96, type=int)
+parser.add_argument('--use_curriculum_learning', default=True, type=bool)
+parser.add_argument('--num_nodes', default=10, type=int)
+parser.add_argument('--embedding_size', default=256, type=int)
+parser.add_argument('--clip', default=5, type=int)
+parser.add_argument('--eps', default=0.3, type=int)
+parser.add_argument('--kernel_size', default=5, type=int)
+parser.add_argument('--steps',default=[10, 30, 50],type=list)
+parser.add_argument('--patience',default=10,type=int)
+parser.add_argument('--test_every_n_epochs', default=1, type=int)
+parser.add_argument('--num_sample', default=10, type=int)
+parser.add_argument('--epsilon',default=2.0e-3,type=float)
+args = parser.parse_args()
+
+
+if __name__ == '__main__':
+    supervisor = DMSupervisor(args=args)
+    supervisor.train(args)
