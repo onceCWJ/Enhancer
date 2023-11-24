@@ -4,7 +4,6 @@ import torch
 
 class LayerParams:
     def __init__(self, rnn_network: torch.nn.Module, layer_type: str, device: str):
-        # 下面在变量名前加一条横线的意思是虽然在技术上可以在外部访问，但是约定来说是不要访问的
         self._rnn_network = rnn_network
         self._params_dict = {}
         self._biases_dict = {}
@@ -14,7 +13,7 @@ class LayerParams:
     def get_weights(self, shape):
         if shape not in self._params_dict:
             nn_param = torch.nn.Parameter(torch.empty(*shape, device=self._device))
-            torch.nn.init.xavier_normal_(nn_param)  # 初始化参数
+            torch.nn.init.xavier_normal_(nn_param)
             self._params_dict[shape] = nn_param
             self._rnn_network.register_parameter('{}_weight_{}'.format(self._type, str(shape)), nn_param)
         return self._params_dict[shape]
