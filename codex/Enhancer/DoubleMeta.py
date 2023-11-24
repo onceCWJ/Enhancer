@@ -138,18 +138,6 @@ class DoubleLearner(nn.Module):
         self.graph_opt.step()
         return loss
 
-    def train_abla(self, inputs, label):
-        self.abla_opt = torch.optim.Adam(params=self.feature_network.parameters(), lr=0.1*self.base_lr)
-        output = self.feature_network(transform_data=inputs, abla=True)
-        loss = self._compute_loss(output, label, standard_scaler=self.standard_scaler)
-        loss.backward()
-        self.abla_opt.step()
-        return loss
-
-    def test_abla(self, inputs):
-        output = self.feature_network(transform_data = inputs, abla=True)
-        return output
-
     def get_noise(self, inputs):
         normalize_tensor = F.normalize(inputs, p=2, dim=0)
         temp_tensor = torch.zeros_like(normalize_tensor, device=self.device) + 0.0001
