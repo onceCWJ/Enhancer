@@ -26,6 +26,7 @@ class GraphLearner(nn.Module):
         self.emb = nn.Parameter(torch.rand(self.period, self.emb_dim, device=self.device))
         self.W_c = nn.Parameter(torch.rand(self.emb_dim, self.order, device=self.device))
         self.relu = nn.ReLU()
+        self.ContextMatching = ContextMatching(args).to(self.device)
 
     def graph_norm(self, W):
         N, N = W.shape
@@ -35,20 +36,57 @@ class GraphLearner(nn.Module):
         out = D @ W @ D
         return out
 
-    def forward(self, dates):
+    def forward(self, inputs, pretrain=False):
         graphs = []
         # print(dates)
         g = self.relu(torch.matmul(self.E, self.E.permute(1, 0)))
         coeff = torch.softmax(torch.mm(self.emb, self.W_c), dim=-1)
-        for i in range(self.lookback):
+        for i in range(self.period):
             graph = torch.zeros(self.num_nodes, self.num_nodes, device=self.device)
-            date = torch.tensor(dates[i] % self.period, dtype=torch.long)
             for j in range(self.order):
-                graph = (graph + coeff[date][j] * torch.matrix_power(g, j) / (self.order))
+                graph = (graph + coeff[i][j] * torch.matrix_power(g, j) / (self.order))
+            # mean = torch.mean(graph, dim=1)
+            # variance = torch.var(graph, dim=1)
             graphs.append(graph)
         graphs = torch.stack(graphs, dim=0)
-        return graphs
+        context = self.ContextMatching(inputs, graphs, pretrain=pretrain)
+        return context
 
+class ContextMatching(nn.Module):
+    def __init__(self, args):
+        super(ContextMatching, self).__init__()
+        self.num_nodes = args.num_nodes
+        self.input_dim = args.input_dim
+        self.device = args.device
+        self.emb_dim = args.emb_dim
+        self.lookback = args.lookback
+        self.period = args.period
+        self.conv = nconv()
+        self.gru = nn.GRU(input_size=self.num_nodes*self.num_nodes, hidden_size=self.period, batch_first=True)
+
+    def forward(self, inputs, graphs, pretrain=False):
+        b, n, t, d = inputs.shape
+        if pretrain:
+            lenx = torch.randint(0, self.period, (self.lookback,))
+            context = graphs[lenx]
+            return context
+        else:
+            sc = inputs.permute(2, 1, 0, 3).reshape(t, n, -1)
+            context_list = []
+            for idx in range(t-1):
+                time_step_data = sc[idx]
+                time_forward = sc[idx+1]
+                metrics = torch.tensor([compute_metric(time_step_data, time_forward, graphs[p]) for p in range(self.period)])
+                optimal_matrix_idx = metrics.argmin()
+                # print('idx:{}'.format(optimal_matrix_idx))
+                context_list.append(graphs[optimal_matrix_idx])
+            context_list.append(torch.cov(sc[-1]))
+            context = torch.stack(context_list, dim=0).reshape(t, -1).unsqueeze(0)
+            output, _ = self.gru(context) # output.shape: [batch_size(1), seq_len, hidden_size]
+            last_idx = F.softmax(torch.squeeze(output[:,-1,:]), dim=0).argmax()
+            # print('last_idx:{}'.format(last_idx))
+            context_list[-1] = graphs[last_idx]
+            return torch.stack(context_list, dim=0)
 
 class Decouple(nn.Module):
     def __init__(self, args, eps=0.95):
@@ -142,6 +180,6 @@ class RelationalML(nn.Module):
         self.feature_dim = args.feature_dim
 
     def forward(self, x, graph_learner):
-        dyn_graph_list = graph_learner(x[0, 0, :, -1]) # input date information for graph generate
+        dyn_graph_list = graph_learner(x) # input date information for graph generate
         inv_pattern, var_pattern = self.decouple(dyn_graph_list)
         return inv_pattern, var_pattern

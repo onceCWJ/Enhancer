@@ -70,8 +70,7 @@ class TemporalML(nn.Module):
         self.process = RPPsAtt(args)
         self.mean = nn.Parameter(torch.tensor(data_dis[0], device=self.device))
         self.var = nn.Parameter(torch.tensor(data_dis[1], device=self.device))
-        self.normal = nn.Parameter(torch.rand(size=(self.num_nodes, self.lookback, self.in_dim), device=self.device))
-        self.uni = nn.Parameter(torch.rand(self.num_nodes, self.lookback, self.in_dim, device=self.device))
+        self.normal = nn.Parameter(torch.normal(size=(self.num_nodes, self.lookback, self.in_dim), mean=data_dis[0], std=data_dis[1], device=self.device))
         for i in range(1):
             self.q_linear.append(nn.Linear(self.in_dim * self.lookback, self.emb_dim))
             self.k_linear.append(nn.Linear(self.in_dim * self.lookback, self.emb_dim))
@@ -90,11 +89,13 @@ class TemporalML(nn.Module):
         RPPAtt = []
         dis = []
         for idx in range(b):
-            q1, k1, v1 = self.q_linear[0](x[idx].reshape(n, -1)), self.k_linear[0](x[idx].reshape(n, -1)), self.v_linear[0](x[idx].reshape(n, -1))
-            q1, k1 ,v1 = self.layernorm[0](q1), self.layernorm[1](k1), self.layernorm[2](v1)
-            data = torch.mm(torch.softmax(torch.mm(q1, k1.permute(1, 0)) / math.sqrt(self.num_nodes), dim=-1), (self.mean * self.normal + self.var+self.uni).reshape(n,-1)).reshape(n, t, d)
+            q1, k1, v1 = self.q_linear[0](x[idx].reshape(n, -1)), self.k_linear[0](x[idx].reshape(n, -1)), \
+                         self.v_linear[0](x[idx].reshape(n, -1))
+            q1, k1, v1 = self.layernorm[0](q1), self.layernorm[1](k1), self.layernorm[2](v1)
+            data = torch.mm(torch.softmax(torch.mm(q1, k1.permute(1, 0)) / math.sqrt(self.num_nodes), dim=-1),
+                            self.normal.reshape(n, -1)).reshape(n, t, d)
             dis.append(data)
-            _, weight = self.process(x[idx][:,-1:,:], data, index)
+            _, weight = self.process(x[idx][:, -1:, :], data, index)
             RPPAtt.append(weight)
         data = torch.stack(dis, dim=0)
         res = torch.stack(RPPAtt, dim=0).permute(0, 1, 3, 2)

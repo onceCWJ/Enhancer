@@ -155,7 +155,7 @@ class Pretrain_Model(nn.Module, Seq2SeqAttrs):
         :return: output: (self.horizon, batch_size, self.num_nodes * self.output_dim)
         """
         # graphs = graph_learner(inputs)
-        graphs = graph_learner(inputs[0, 0, :, -1])
+        graphs = graph_learner(inputs, pretrain=True)
         batch_size = inputs.shape[0]
         inputs = inputs.permute(2, 0, 1, 3).reshape(self.seq_len, batch_size, -1)
         adj = torch.sum(graphs, dim=0) / len(graphs)
