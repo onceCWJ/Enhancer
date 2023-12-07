@@ -111,9 +111,9 @@ class Decouple(nn.Module):
         self.period = args.period
         self.dropout = args.dropout
         self.diff_step = args.max_diffusion_step
-        self.q_linear = nn.Linear(in_dim, hid_dim)
-        self.k_linear = nn.Linear(in_dim, hid_dim)
-        self.v_linear = nn.Linear(in_dim, hid_dim)
+        self.q_linear = nn.Linear(self.K, hid_dim)
+        self.k_linear = nn.Linear(self.K, hid_dim)
+        self.v_linear = nn.Linear(self.K, hid_dim)
         self.feature_dim = args.feature_dim
         self.K = math.ceil(math.log(self.num_nodes)) # self.num_nodes/math.log(self.num_nodes)
         self.E1 = torch.nn.Parameter(torch.rand(self.num_nodes, self.feature_dim, device=self.device))
@@ -124,7 +124,7 @@ class Decouple(nn.Module):
         self.layernorm3 = nn.LayerNorm(hid_dim)
         self.neighbor = torch.zeros(self.lookback, self.num_nodes, self.K, device=self.device, dtype=torch.long)
         self.point = torch.rand(self.lookback, self.num_nodes, self.K, device=self.device)
-        self.fc = nn.Linear(self.num_nodes, in_dim)
+        self.fc = nn.Linear(self.num_nodes, self.K)
         self.eps = args.eps
         self.act = nn.ReLU(inplace=False)
         self.variant_pattern = []
@@ -142,7 +142,7 @@ class Decouple(nn.Module):
 
     def neighbor_propogate(self, node_embedding):
         # The code is divided into two part: in-time aggregate and across-time aggregate
-        # across-time aggregate: Temporal Hawkes Attention
+        # across-time aggregate
         for idx in range(len(self.neighbor)):
             node_embedding[idx] = torch.sum(node_embedding[idx][self.neighbor[idx]] * (torch.unsqueeze(self.point[idx], dim=-1)), dim=1) + node_embedding[idx]
         return node_embedding

@@ -135,8 +135,6 @@ class DoubleLearner(nn.Module):
         loss = criterion(outputs, label)
         losses = loss
         losses.backward()
-        # print(torch.autograd.grad(losses, self.pretrain_model.parameters(), allow_unused=True))
-        # print(self.pretrain_model.state_dict())
         self.graph_opt.step()
         return loss
 
@@ -176,9 +174,6 @@ class DoubleLearner(nn.Module):
         # Separate Training
         losses = loss + var_loss + mean_loss
         losses.backward()
-        # print('loss:{} var_loss:{} mean_loss:{}'.format(loss, var_loss, mean_loss))
-        # print(self.feature_network.state_dict())
-        # print(torch.autograd.grad(losses, self.feature_network.parameters()))
         if self.clip is not None:
             torch.nn.utils.clip_grad_norm_(self.feature_network.parameters(), self.clip)
         self.inner_opt.step()
@@ -215,14 +210,11 @@ class DoubleLearner(nn.Module):
                 mean_loss.append(loss)
             else:
                 var_loss.append(loss)
-        # mean = self.mean_loss(cur_loss, mean_loss) + self.mean_loss(cur_loss, losses) + self.var_loss(var_loss)
         loss1, loss2, loss3, loss4 = self.mean_loss(cur_loss, mean_loss), self.mean_loss(cur_loss, losses), 0, self.var_loss(var_loss)
         for i in range(len(mean_loss)):
             loss3 = loss3 + torch.abs(mean_loss[i] - var_loss[i]) / len(mean_loss)
         loss = cur_loss + self.beta * (loss1 + loss2) + loss3 + loss4
         loss.backward()
-        # print(self.RelationalML.state_dict())
-        # print(torch.autograd.grad(loss, self.RelationalML.parameters(), allow_unused=True))
         if self.clip is not None:
             torch.nn.utils.clip_grad_norm_(self.TemporalML.parameters(), self.clip)
             torch.nn.utils.clip_grad_norm_(self.RelationalML.parameters(), self.clip)
