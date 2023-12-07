@@ -91,18 +91,6 @@ def metric_compute(prediction, ground_truth, mask, dataset, eva_type, model_type
             bt_long10 += real_ret_rat_top10
             sharpe_li10.append(real_ret_rat_top10)
 
-
-    if dataset == 'NYSE':
-        plt.plot(np.arange(len(profit_list)),np.array(profit_list),linestyle='--')
-        plt.savefig('graphs/{}_NYSE_profit'.format(model_type), dpi=1000)
-        np.save('graphs/{}_profit_{}'.format(model_type,dataset), np.array(profit_list))
-        
-        
-    elif dataset == 'NASDAQ':
-        plt.plot(np.arange(len(profit_list)),np.array(profit_list),linestyle='--')
-        plt.savefig('graphs/{}_NASDAQ_profit'.format(model_type), dpi=1000)
-        np.save('graphs/{}_profit_{}'.format(model_type,dataset), np.array(profit_list))
-
     performance['ndcg'] = round(np.mean(ndcg5), 4)
     performance['mrr'] = round(mrr_top / (prediction.shape[1] - all_miss_days_top), 4)
     # performance['irr'] = bt_long
@@ -113,8 +101,6 @@ def metric_compute(prediction, ground_truth, mask, dataset, eva_type, model_type
     free = np.power(1 + sharpe_rf_dict[dataset], 1 / 365)-1
     performance['sr'] = round((np.mean(sharpe_li5)-free)/np.std(sharpe_li5), 4)
     return performance
-
-
 
 def evaluate(prediction, ground_truth, dataset, eva_type, model_type, report=False):
     assert ground_truth.shape == prediction.shape, 'shape mis-match'

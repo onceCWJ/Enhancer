@@ -91,16 +91,6 @@ def metric_compute(prediction, ground_truth, mask, dataset, eva_type, report=Fal
             bt_long10 += real_ret_rat_top10
             sharpe_li10.append(real_ret_rat_top10)
 
-
-    if dataset == 'NYSE':
-        if profit_list[-1] / 10000.0 - 1.0 > 0.52 and profit_list[-1] / 10000.0 - 1.0 < 0.60:
-            plt.plot(np.arange(len(profit_list)),np.array(profit_list),linestyle='--')
-            np.save('graphs/profit_{}'.format(dataset), np.array(profit_list))
-    elif dataset == 'NASDAQ':
-        if profit_list[-1] / 10000.0 - 1.0 > 0.59 and profit_list[-1] / 10000.0 - 1.0 < 0.70:
-            plt.plot(np.arange(len(profit_list)),np.array(profit_list),linestyle='--')
-            np.save('graphs/profit_{}'.format(dataset), np.array(profit_list))
-
     performance['ndcg'] = round(np.mean(ndcg5), 4)
     performance['mrr'] = round(mrr_top / (prediction.shape[1] - all_miss_days_top), 4)
     # performance['irr'] = bt_long
