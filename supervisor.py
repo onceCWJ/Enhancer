@@ -226,12 +226,19 @@ class DMSupervisor:
 
         batches_seen = 0
         # Meta-Train Stage
+        all_batches = 0
+        train_iterator = self._data['train_loader'].get_iterator()
+        for batch_idx, (x, y) in enumerate(train_iterator):
+            all_batches = batch_idx
+
         for epoch_num in range(args.epochs):
             # print("Meta Train #Num of epoch:", epoch_num)
             train_iterator = self._data['train_loader'].get_iterator()
             losses = []
             start_time = time.time()
             for batch_idx, (x, y) in enumerate(train_iterator):
+                if batch_idx >= all_batches * 0.7:
+                    break
                 x, y = self._prepare_data(x, y)
                 x = x.reshape(self.seq_len, self.batch_size, self.num_nodes, -1).permute(1, 2, 0, 3)
                 y = y.squeeze(dim=0)
@@ -250,6 +257,8 @@ class DMSupervisor:
             losses = []
             train_iterator = self._data['train_loader'].get_iterator()
             for batch_idx, (x_org, y_org) in enumerate(train_iterator):
+                if batch_idx < all_batches * 0.7:
+                    pass
                 x, y = self._prepare_data(x_org, y_org)
                 x = x.reshape(self.seq_len, self.batch_size, self.num_nodes, -1).permute(1, 2, 0, 3)
                 y = y.squeeze(dim=0)
