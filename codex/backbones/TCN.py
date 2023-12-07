@@ -79,7 +79,7 @@ class TCN(nn.Module):
         self.seq_len = args.lookback
         self.fc = nn.Linear(self.seq_len, self.horizon)
         self.act = nn.LeakyReLU()
-        self.TCN = TemporalConvNet(num_inputs=self.num_nodes * self.in_dim, num_channels=[self.num_nodes, self.num_nodes], kernel_size=3, dropout=0.3)
+        self.TCN = TemporalConvNet(num_inputs=self.num_nodes * self.in_dim, num_channels=[self.num_nodes, self.num_nodes], kernel_size=3, dropout=0.0)
 
     def forward(self, transform_data, invariant_pattern=None, variant_pattern=None, intervene=None, abla=False):
         b, n, t, d = transform_data.shape
