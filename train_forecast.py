@@ -35,6 +35,7 @@ parser.add_argument('--num_layers', type=int, default=2, help='number layers of 
 parser.add_argument('--T_N', type=int, default=20, help='number of the noise terms')
 parser.add_argument('--dropout', type=float, default=0.0, help='Dropout rate (1 - keep probability).')
 parser.add_argument('--noise_factor', type=float, default=1000, help='Normalizing factor of noise')
+parser.add_argument('--beta', default=3, type=int, help='balancing dactor')
 parser.add_argument('--mean_factor', type=float, default=100, help='Amplification of the mean loss function')
 parser.add_argument('--var_factor', type=float, default=1e5, help='Amplification of the variance loss function')
 parser.add_argument('--inner_lr', type=float, default=0.0003, help='learning rate of the feature network')

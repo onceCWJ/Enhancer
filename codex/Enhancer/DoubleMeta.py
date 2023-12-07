@@ -9,6 +9,8 @@ from codex.backbones.TCN import *
 from codex.backbones.Transformer import *
 from codex.Enhancer.forecast_loss import *
 from codex.Enhancer.forecast_utils import *
+import random
+import copy
 
 def cosine_similarity_torch(x1, x2=None, eps=1e-8):
     x2 = x1 if x2 is None else x2
@@ -43,6 +45,7 @@ class DoubleLearner(nn.Module):
         self.epsilon = args.epsilon
         self.lr_decay_ratio = args.lr_decay_ratio
         self.steps = args.steps
+        self.beta = args.beta
         self.mean_factor = args.mean_factor
         self.var_factor = args.var_factor
         self.graph_learner = GraphLearner(args).to(self.device)
@@ -213,10 +216,10 @@ class DoubleLearner(nn.Module):
             else:
                 var_loss.append(loss)
         # mean = self.mean_loss(cur_loss, mean_loss) + self.mean_loss(cur_loss, losses) + self.var_loss(var_loss)
-        loss1, loss2, loss3 = self.mean_loss(cur_loss, var_loss), 0, self.var_loss(var_loss)
+        loss1, loss2, loss3, loss4 = self.mean_loss(cur_loss, mean_loss), self.mean_loss(cur_loss, losses), 0, self.var_loss(var_loss)
         for i in range(len(mean_loss)):
-            loss2 = loss2 + torch.abs(mean_loss[i]-var_loss[i]) / len(mean_loss)
-        loss = cur_loss + loss1 + loss2 + loss3
+            loss3 = loss3 + torch.abs(mean_loss[i] - var_loss[i]) / len(mean_loss)
+        loss = cur_loss + self.beta * (loss1 + loss2) + loss3 + loss4
         loss.backward()
         # print(self.RelationalML.state_dict())
         # print(torch.autograd.grad(loss, self.RelationalML.parameters(), allow_unused=True))

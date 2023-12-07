@@ -1,5 +1,6 @@
 import torch.nn as nn
 from codex.Enhancer.forecast_loss import *
+import torch.nn.functional as F
 import math
 
 def cosine_similarity_torch(x1, x2=None, eps=1e-8):
@@ -51,6 +52,19 @@ class GraphLearner(nn.Module):
         graphs = torch.stack(graphs, dim=0)
         context = self.ContextMatching(inputs, graphs, pretrain=pretrain)
         return context
+
+def compute_metric(time1, time2, correlation_matrix):
+    # Flatten and reshape data for cosine similarity calculation
+    loss = masked_mae_loss(torch.mm(correlation_matrix, time1), time2)
+    return loss
+
+class nconv(nn.Module):
+    def __init__(self):
+       super(nconv,self).__init__()
+
+    def forward(self,x, A):
+        x = torch.einsum('nv,vw->nw',(x,A))
+        return x.contiguous()
 
 class ContextMatching(nn.Module):
     def __init__(self, args):
