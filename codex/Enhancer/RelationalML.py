@@ -9,7 +9,6 @@ def cosine_similarity_torch(x1, x2=None, eps=1e-8):
     w2 = w1 if x2 is x1 else x2.norm(p=2, dim=1, keepdim=True)
     return torch.mm(x1, x2.t()) / (w1 * w2.t()).clamp(min=eps)
 
-
 class GraphLearner(nn.Module):
     def __init__(self, args):
         super(GraphLearner, self).__init__()
@@ -46,8 +45,6 @@ class GraphLearner(nn.Module):
             graph = torch.zeros(self.num_nodes, self.num_nodes, device=self.device)
             for j in range(self.order):
                 graph = (graph + coeff[i][j] * torch.matrix_power(g, j) / (self.order))
-            # mean = torch.mean(graph, dim=1)
-            # variance = torch.var(graph, dim=1)
             graphs.append(graph)
         graphs = torch.stack(graphs, dim=0)
         context = self.ContextMatching(inputs, graphs, pretrain=pretrain)
