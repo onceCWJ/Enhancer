@@ -177,9 +177,6 @@ class DMSupervisor:
                     ae[i].append(masked_medae_loss(y_pred[i:i + 1], y_true[i:i + 1]).item())
 
             AR, SR = calc_AR_SR(self.ratio_list)
-            self.AR_list.append(AR)
-            self.SR_list.append(SR)
-
             mean_loss = np.mean(losses)
             mean_mape = np.mean(mapes)
             mean_medae = np.mean(medae)
