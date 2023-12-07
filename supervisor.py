@@ -15,6 +15,8 @@ class DMSupervisor:
         self.args = args
         self.num_sample = args.num_sample
         self.device = args.device
+        self.AR_list = []
+        self.SR_list = []
         # data set
         self._data = utils.load_dataset(args.dataset_dir, args.batch_size)
         self.standard_scaler = self._data['scaler']
@@ -102,6 +104,12 @@ class DMSupervisor:
                 y_true = self.standard_scaler.inverse_transform(y)
                 y_pred = self.standard_scaler.inverse_transform(output)
 
+                if dataset == 'test':
+                    top_k, ratio_list, dict = calc_AR(y_pred, y_org, x_org, self.topk_indices, self.dict)
+                    self.ratio_list += ratio_list
+                    self.topk_indices = top_k
+                    self.dict = dict
+
                 mapes.append(masked_mape_loss(y_pred, y_true).item())
                 mses.append(masked_mse_loss(y_pred, y_true).item())
                 medae.append(masked_medae_loss(y_pred, y_true).item())
@@ -112,6 +120,11 @@ class DMSupervisor:
                     m[i].append(masked_mape_loss(y_pred[i:i + 1], y_true[i:i + 1]).item())
                     r[i].append(masked_mse_loss(y_pred[i:i + 1], y_true[i:i + 1]).item())
                     ae[i].append(masked_medae_loss(y_pred[i:i + 1], y_true[i:i + 1]).item())
+
+            if dataset == 'test':
+                AR, SR = calc_AR_SR(self.ratio_list)
+                self.AR_list.append(AR)
+                self.SR_list.append(SR)
 
             mean_loss = np.mean(losses)
             mean_mape = np.mean(mapes)
@@ -147,6 +160,11 @@ class DMSupervisor:
                 y_true = self.standard_scaler.inverse_transform(y)
                 y_pred = self.standard_scaler.inverse_transform(output)
 
+                top_k, ratio_list, dict = calc_AR(y_pred, y_org, x_org, self.topk_indices, self.dict)
+                self.ratio_list += ratio_list
+                self.topk_indices = top_k
+                self.dict = dict
+
                 mapes.append(masked_mape_loss(y_pred, y_true).item())
                 mses.append(masked_mse_loss(y_pred, y_true).item())
                 medae.append(masked_medae_loss(y_pred, y_true).item())
@@ -157,6 +175,10 @@ class DMSupervisor:
                     m[i].append(masked_mape_loss(y_pred[i:i+1], y_true[i:i+1]).item())
                     r[i].append(masked_mse_loss(y_pred[i:i+1], y_true[i:i+1]).item())
                     ae[i].append(masked_medae_loss(y_pred[i:i + 1], y_true[i:i + 1]).item())
+
+            AR, SR = calc_AR_SR(self.ratio_list)
+            self.AR_list.append(AR)
+            self.SR_list.append(SR)
 
             mean_loss = np.mean(losses)
             mean_mape = np.mean(mapes)
@@ -273,11 +295,10 @@ class DMSupervisor:
                     break
 
         self.test(args, best_idx)
-        print('mean_train_time:{}'.format(np.mean(np.array(train_time))))
-        print('mean_val_time:{}'.format(np.mean(np.array(val_time))))
-        print('mean_AR:{}'.format(np.mean(np.array(self.AR_list))))
-        print('mean_SR:{}'.format(np.mean(np.array(self.SR_list))))
-
+        print('max_AR:{}'.format(np.max(np.array(self.AR_list))))
+        print('max_SR:{}'.format(np.max(np.array(self.SR_list))))
+        print('median_AR:{}'.format(np.median(np.array(self.AR_list))))
+        print('median_SR:{}'.format(np.median(np.array(self.SR_list))))
 
     def _prepare_data(self, x, y):
         x, y = self._get_x_y(x, y)
