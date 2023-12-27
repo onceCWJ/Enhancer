@@ -14,6 +14,8 @@ Download NASDAQ, NYSE datasets from [https://disk.pku.edu.cn:443/link/FE8FB4665C
 
 Download CSI300,CSI500 datasets from [https://disk.pku.edu.cn:443/link/FE8FB4665C8C7A117FB14E26F35035A5]. Put into the `Enhancer/data/{CSI300,CSI500}` folder.
 
+#### Update: All data will be released after the paper is accepted
+
 ## Split dataset
 
 Run the following commands to generate train/validation/test dataset at `data/{CSI300,CSI500}/{train,val,test}.npz`.
