@@ -1,4 +1,4 @@
-# Enhancer: Model Enhancement against Temporal-Relational Distribution Shifts for Stock Prediction
+# Enhancer
 ## Requirements
 - Python=3.8.1
 - Pytorch=1.12.1+cu116
