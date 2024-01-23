@@ -31,15 +31,15 @@ python generate_data.py --dataset CSI500 --train_rate (2/3) --val_rate (1/6)
 
 ### Rank Task
 
-python train_rank.py --dataset NASDAQ 
+python train_rank.py --dataset NASDAQ --model_type GRU/Transformer/linear/TCN
 
-python train_rank.py --dataset NYSE
+python train_rank.py --dataset NYSE --model_type GRU/Transformer/linear/TCN
 
 ### Forecast Task
 
-python train_forecast.py --dataset_dir data/CSI300 --model_type GRU
+python train_forecast.py --dataset_dir data/CSI300 --model_type GRU/Transformer/linear/TCN
 
-python train_forecast.py --dataset_dir data/CSI500 --model_type GRU
+python train_forecast.py --dataset_dir data/CSI500 --model_type GRU/Transformer/linear/TCN
 
 ## Acknowledgment
 The copyright of the code belongs to the authors of the paper. Before the official publication of the paper, this code cannot be used in the research and commercial fields
